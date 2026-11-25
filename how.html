@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Follow the ICLR 2027 Atlas data pipeline and run a live search to see how retrieval works.">
+  <title>How it works · ICLR 2027 Atlas</title>
+  <link rel="icon" href="assets/img/favicon.svg">
+  <link rel="stylesheet" href="assets/css/atlas.css">
+  <link rel="stylesheet" href="assets/css/how.css">
+</head>
+<body data-page="how">
+  <a class="how-skip" href="#main">Skip to content</a>
+  <header id="topbar" class="topbar"></header>
+  <main id="main" class="how-wrap">
+    <header class="how-hero">
+      <div class="eyebrow">ICLR 2027 Atlas / Field notes 01</div>
+      <div class="how-title-row"><h1>How it works<span>.</span></h1><a class="how-jump" href="#demo">Trace a live query <span aria-hidden="true">↗</span></a></div>
+      <p class="how-deck">A paper becomes a point on the map, a search result, and a fact sheet. Follow the data, then try the retrieval yourself.</p>
+      <dl class="how-counters" id="live-counts" aria-label="Current dataset"><div><dt>Paper records</dt><dd>—</dd></div><div><dt>Active submissions</dt><dd>—</dd></div><div><dt>Research areas</dt><dd>—</dd></div><div><dt>AI fact sheets</dt><dd>—</dd></div></dl>
+      <p id="data-note" class="how-caption" role="status">Reading the current data snapshot…</p>
+    </header>
+
+    <section class="how-section" aria-labelledby="pipeline-title">
+      <div class="how-section-head"><span class="how-index">01 / DATA</span><div><h2 id="pipeline-title">The route to the Atlas</h2><p>Public submissions enter once; each stage adds another way to read them.</p></div></div>
+      <figure class="how-pipeline"><div id="pipeline-svg" aria-live="off"></div><figcaption>Read in numbered order. The GPU pipeline builds the map; a separate EmbeddingGemma export powers browser retrieval.</figcaption></figure>
+      <div class="how-method-note"><b>Reading the scores.</b> Mean rating on the <span id="rating-scale">1–4</span> scale, with review count and standard deviation. Papers are ordered by mean score; the confidence-weighted mean breaks ties. Withdrawn and desk-rejected papers remain in the index but are not ordered. No acceptance labels are shown — decisions are not ours.</div>
+    </section>
+
+    <section class="how-section" aria-labelledby="engines-title">
+      <div class="how-section-head"><span class="how-index">02 / RETRIEVAL</span><div><h2 id="engines-title">Three ways to find a paper</h2><p>The page checks availability in this order. The live demo uses the first available engine.</p></div></div>
+      <p class="how-engine-status" id="engine-status" role="status">Checking the search engines…</p>
+      <div class="how-engines">
+        <article class="how-engine" data-engine="server"><div class="how-engine-top"><span class="how-caption">01 · SERVER</span><span class="how-engine-badge">Checking</span></div><h3>GPU semantic search</h3><div class="how-mini" data-flow="Query|bge-base|Top-k" aria-label="Query to bge-base embedding to top-k results"></div><p><code>api/search</code> embeds the query with bge-base on the RTX GPU, compares paper vectors, then adds a small lexical signal.</p><p class="how-when"><b>When it runs</b>Only when <code>api/health</code> reports ready. Around 15 ms is a reference latency; the demo measures this request.</p></article>
+        <article class="how-engine" data-engine="browser"><div class="how-engine-top"><span class="how-caption">02 · ON DEVICE</span><span class="how-engine-badge">Checking</span></div><h3>Browser semantic search</h3><div class="how-mini" data-flow="Query|Gemma|Dot product" aria-label="Query to on-device EmbeddingGemma embedding to dot product"></div><p>EmbeddingGemma turns the query into a vector on your device. A dot product against the int8 document vectors selects the top-k papers.</p><p class="how-when"><b>When it runs</b>When browser semantic search is enabled and its model and vectors are available. <a href="search.html">Enable it on Search ↗</a></p></article>
+        <article class="how-engine" data-engine="keyword"><div class="how-engine-top"><span class="how-caption">03 · LOCAL INDEX</span><span class="how-engine-badge">Ready</span></div><h3>Keyword search</h3><div class="how-mini" data-flow="Terms|Weights|Top-k" aria-label="Query terms to term weights to top-k results"></div><p>BM25-style term weights reward rare words and title matches across titles, keywords, TL;DRs, and categories. No model download.</p><p class="how-when"><b>When it runs</b>The fallback whenever neither semantic engine can run. Exact technical terms and paper titles work well here.</p></article>
+      </div>
+    </section>
+
+    <section class="how-section how-quality" id="quality" aria-labelledby="quality-title">
+      <div class="how-section-head"><span class="how-index">03 / MEASURED</span><div><h2 id="quality-title">Search quality &amp; speed — measured</h2><p>How well do the results answer the query, and how long does retrieval take? Compare the published benchmark below.</p></div></div>
+      <p class="how-caption" id="quality-status" role="status">Loading the search benchmark…</p>
+      <div id="quality-content" hidden>
+        <div class="quality-headlines" id="quality-headlines"></div>
+        <figure class="quality-figure" aria-labelledby="quality-chart-title">
+          <div class="quality-block-head"><h3 id="quality-chart-title">Accuracy vs. latency</h3><span class="how-caption">Higher and farther left is better</span></div>
+          <div class="quality-chart-layout"><div id="quality-chart"></div><ol class="quality-key" id="quality-key" aria-label="Chart engines"></ol></div>
+          <p class="quality-point-detail how-caption" id="quality-point-detail" aria-live="polite">Select a point or engine to inspect its measurements.</p>
+          <figcaption class="how-caption" id="quality-latency-note">Latency is the exported benchmark p95, on a logarithmic scale. These are not timings from your device.</figcaption>
+        </figure>
+        <div class="quality-block">
+          <div class="quality-block-head"><h3>Held-out query results</h3><label class="quality-sort">Sort engines <select id="quality-sort"><option value="ndcg10:desc">nDCG@10 · highest first</option><option value="ndcg10:asc">nDCG@10 · lowest first</option><option value="mrr10:desc">MRR@10 · highest first</option><option value="judged10:desc">Judged coverage · highest first</option><option value="p95:asc">P95 latency · fastest first</option><option value="mean:asc">Mean latency · fastest first</option><option value="n:desc">Test queries · most first</option><option value="label:asc">Engine · A to Z</option></select></label></div>
+          <table class="quality-table" id="quality-engine-table" role="table"><caption>Test split only. nDCG and MRR range from 0 to 1; higher is better. Coverage is the fraction of top-10 results with a grade.</caption><thead role="rowgroup"><tr role="row"><th scope="col" aria-sort="none"><button type="button" data-quality-sort="label">Engine</button></th><th scope="col" aria-sort="descending"><button type="button" data-quality-sort="ndcg10">nDCG@10 ↓</button></th><th scope="col" aria-sort="none"><button type="button" data-quality-sort="mrr10">MRR@10</button></th><th scope="col" aria-sort="none"><button type="button" data-quality-sort="judged10">Judged@10</button></th><th scope="col" aria-sort="none"><button type="button" data-quality-sort="n">Test queries</button></th><th scope="col" aria-sort="none"><button type="button" data-quality-sort="mean">Mean ms</button></th><th scope="col" aria-sort="none"><button type="button" data-quality-sort="p95">P95 ms</button></th></tr></thead><tbody role="rowgroup"></tbody></table>
+        </div>
+        <div class="quality-block"><div class="quality-block-head"><h3>Accuracy by query type</h3><span class="how-caption">Held-out nDCG@10 · shared 0–1 scale</span></div><div class="quality-types" id="quality-types"></div></div>
+        <div class="quality-block"><h3>Browser speed &amp; reference agreement</h3><p class="how-caption">Warm query embedding in Chrome on the benchmark machine (RTX 5060 Ti / Intel CPU). Model loading, downloads, and result ranking are excluded. Cosine agreement compares query vectors with the Python fp32 reference; it is not retrieval accuracy. Device and query length affect speed.</p><table class="quality-table" id="quality-browser-table" role="table"><caption>One-time model download and query embedding measurements. A dash means no measurement was published.</caption><thead role="rowgroup"><tr role="row"><th scope="col">Variant</th><th scope="col">Download MB</th><th scope="col">Embed ms</th><th scope="col">Cosine vs. reference</th><th scope="col">Note</th></tr></thead><tbody role="rowgroup"></tbody></table></div>
+        <div class="quality-block" id="quality-idea" hidden><h3>Idea matching</h3><p class="how-caption" id="quality-idea-note"></p><table class="quality-table" id="quality-idea-table" role="table"><caption>Idea-paraphrase benchmark, reported separately from graded relevance.</caption><thead role="rowgroup"><tr role="row"><th scope="col">Engine</th><th scope="col">Success@1</th><th scope="col">Success@10</th><th scope="col">MRR@10</th></tr></thead><tbody role="rowgroup"></tbody></table></div>
+        <div class="quality-block" id="quality-examples"><h3>Side-by-side example</h3><label class="quality-query-label" for="quality-query">Choose a benchmark query</label><select id="quality-query"></select><p class="how-caption" id="quality-query-note"></p><p class="quality-grade-key how-caption">Grades: 2 = directly relevant · 1 = related · 0 = off-topic · — = unjudged. These are relevance judgments, not paper review scores.</p><div class="quality-comparison" id="quality-comparison" aria-live="polite"></div></div>
+        <aside class="quality-method" aria-labelledby="quality-method-title"><h3 id="quality-method-title">How to read these measurements</h3><div id="quality-method"></div><a href="data/search_eval.json" class="how-caption">Inspect the benchmark data ↗</a></aside>
+      </div>
+    </section>
+
+    <section class="how-section" aria-labelledby="repo-title">
+      <div class="how-section-head"><span class="how-index">04 / STORAGE</span><div><h2 id="repo-title">Where the embeddings live</h2><p>One binary shard per research area. The browser fetches the vectors it needs and keeps them in memory for this page.</p></div></div>
+      <div class="how-repository"><div class="how-repo-bar"><span class="mono">data/embed/</span><span id="embed-summary">Checking publication status…</span></div><div id="shard-grid" class="how-shards"></div><p id="shard-note" class="how-caption">The manifest supplies model, dimensions, file names, and paper counts.</p></div>
+    </section>
+
+    <section class="how-section how-demo" id="demo" aria-labelledby="demo-title">
+      <div class="how-section-head"><span class="how-index">05 / TRY IT</span><div><h2 id="demo-title">Watch a query travel</h2><p>Real results, measured in this tab. Nothing runs until you press the button.</p></div></div>
+      <form id="demo-form"><label for="demo-query">What are you looking for?</label><div class="how-query-row"><input id="demo-query" name="q" value="KV cache compression for long context" maxlength="300" required autocomplete="off" spellcheck="false"><button id="demo-run" type="submit" disabled>Run the trace <span aria-hidden="true">→</span></button></div></form>
+      <p id="demo-status" class="how-caption" role="status">Loading the paper index…</p>
+      <ol class="how-trace" id="trace">
+        <li data-step="query"><div><span>01</span><b>Query → vector</b><output>—</output></div><p>Waiting for your query.</p><div id="vector-strip" class="how-vector" hidden></div></li>
+        <li data-step="shards"><div><span>02</span><b>Fetch the data</b><output>—</output></div><p>Shard states appear in the repository above.</p></li>
+        <li data-step="score"><div><span>03</span><b>Compare papers</b><output>—</output></div><p>Similarity or term weights, depending on the engine.</p></li>
+        <li data-step="results"><div><span>04</span><b>Top 10</b><output>—</output></div><p>Results appear below, with preliminary scores.</p></li>
+      </ol>
+      <div class="how-result-head"><h3 id="results-heading">Your results</h3><a id="full-search" href="search.html" hidden>Open full search ↗</a></div>
+      <ol id="demo-results" class="how-results" aria-labelledby="results-heading"></ol>
+      <p id="results-empty" class="how-caption">Run the trace to inspect the retrieved papers.</p>
+    </section>
+
+    <section class="how-ask" aria-labelledby="ask-title"><div><span class="how-index">06 / ASK GEMMA</span><h2 id="ask-title">Read with a local assistant.</h2><p>Ask Gemma uses on-device Gemma 4 E2B through LiteRT / MediaPipe and WebGPU. Allow roughly 2 GB for the one-time model download.</p><p>Retrieval selects papers and builds numbered passages. Gemma answers from those passages and cites their #numbers so you can check the source.</p><a class="how-jump" href="ask.html">Open Ask Gemma <span aria-hidden="true">↗</span></a></div><div class="how-ask-flow" aria-label="Retrieve papers, build numbered passages, answer with citations"><span>Retrieve papers</span><i aria-hidden="true">↓</i><span>Passages [1] [2] …</span><i aria-hidden="true">↓</i><span>Grounded answer · #1, #2</span></div></section>
+    <aside class="how-honesty" aria-labelledby="honesty-title"><span class="how-index">A NOTE ON TRUST</span><h2 id="honesty-title">Useful signals. Check the source.</h2><p>Scores are preliminary. The Atlas shows review scores only and makes no prediction of acceptance — decisions belong to the program committee. AI fact sheets and answers may be wrong; verify claims against the paper. The public site does not redistribute review text.</p></aside>
+    <noscript><p>Enable JavaScript to load the live counts, inspect the pipeline, and run the search demo.</p></noscript>
+  </main>
+  <footer class="how-footer"><span>ICLR 2027 Atlas · How it works</span><a href="index.html">Return to the Atlas ↗</a></footer>
+  <script type="module" src="assets/js/pages/how.js"></script>
+<div id="atlas-notice" style="position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;display:none;gap:12px;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:rgba(29,27,23,.92);color:#f3ecdd;font:13px/1.45 Bahnschrift,'Segoe UI',sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.25)">
+<span><b>ICLR 2027 Atlas — static edition.</b> Scores are <i>preliminary</i> reviewer ratings (1–4) from public OpenReview pages. The Atlas shows scores only and makes <b>no</b> prediction of acceptance. Fact sheets &amp; briefs are AI-written (audited) — verify before citing. Search defaults to keyword and offers optional on-device semantic search via EmbeddingGemma (Built with Gemma; <a href="https://ai.google.dev/gemma/terms" target="_blank" style="color:#e6b257">Gemma Terms of Use</a>). Not affiliated with ICLR/OpenReview.</span>
+<button onclick="localStorage.setItem('atlasNotice','1');this.parentNode.remove()" style="flex:none;border:1px solid #c58d26;background:#c58d26;color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer">Got it</button></div>
+<script>if(!localStorage.getItem('atlasNotice'))document.getElementById('atlas-notice').style.display='flex';</script>
+</body>
+</html>

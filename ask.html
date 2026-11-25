@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask Gemma · ICLR 2027 Atlas</title>
+<meta name="description" content="Ask questions or summarize ICLR 2027 papers on your own device with Gemma 4 E2B (WebGPU / LiteRT) grounded in Atlas data.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/atlas.css">
+<link rel="stylesheet" href="assets/css/pages.css">
+<link rel="stylesheet" href="assets/css/atlas-gemma.css">
+<script>try{var t=localStorage.getItem("atlas.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body data-page="ask">
+<header id="topbar" class="topbar"></header>
+<main class="page">
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">On-device research assistant</div>
+      <h1>Ask Gemma</h1>
+      <p class="lede">Query or summarize ICLR 2027 submissions directly in your browser using Google’s Gemma 4 E2B (LiteRT / WebGPU), grounded strictly in Atlas papers, fact sheets, and abstracts.</p>
+    </div>
+  </div>
+
+  <div class="ask-notices" aria-label="Before you start">
+    <div class="ask-notice"><b>Runs on your device</b>Everything runs locally in your browser on your GPU. Nothing you type leaves your machine.</div>
+    <div class="ask-notice"><b>~2 GB one-time download</b>Downloaded from Hugging Face (Apache-2.0) only after you confirm, then cached in browser storage (OPFS).</div>
+    <div class="ask-notice"><b>Needs WebGPU</b>Desktop Chrome or Edge with ~2 GB free GPU memory is recommended. Without it, instant retrieval still works.</div>
+    <div class="ask-notice"><b>Grounded — verify</b>Answers use only retrieved Atlas passages and cite #numbers. Small models can still err — verify via OpenReview.</div>
+  </div>
+
+  <div id="atlas-gemma-host"></div>
+</main>
+<footer id="foot" class="foot"></footer>
+
+<script defer src="assets/js/atlas-gemma-rag.js"></script>
+<script defer src="assets/js/atlas-gemma.js"></script>
+<script type="module">
+  import { mountShell, setFooter } from "./assets/js/atlas.js";
+  mountShell("ask", { keys: [] });
+
+  function boot() {
+    const host = document.getElementById("atlas-gemma-host");
+    if (!window.AtlasGemma || !host) return;
+    window.AtlasGemma.mountInline(host);
+
+    const qs = new URLSearchParams(location.search);
+    const q = qs.get("q") || "";
+    const ids = qs.get("ids") || "";
+    const mode = qs.get("mode") || "";
+    if (mode === "summarize" || ids) {
+      window.AtlasGemma.summarize(ids ? ids.split(",") : [], q);
+    } else if (q) {
+      window.AtlasGemma.open({ query: q, autoSend: true });
+    }
+
+    if (window.AtlasGemmaRAG) {
+      window.AtlasGemmaRAG.ready().then(() => {
+        const meta = window.AtlasGemmaRAG.meta() || {};
+        setFooter({ generated: meta.generated, records: window.AtlasGemmaRAG.count(), extra: "Ask Gemma · on-device WebGPU" });
+      }).catch(() => {});
+    }
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+</script>
+<div id="atlas-notice" style="position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;display:none;gap:12px;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:rgba(29,27,23,.92);color:#f3ecdd;font:13px/1.45 Bahnschrift,'Segoe UI',sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.25)">
+<span><b>ICLR 2027 Atlas — static edition.</b> Scores are <i>preliminary</i> reviewer ratings (1–4) from public OpenReview pages. The Atlas shows scores only and makes <b>no</b> prediction of acceptance. Fact sheets &amp; briefs are AI-written (audited) — verify before citing. Search defaults to keyword and offers optional on-device semantic search via EmbeddingGemma (Built with Gemma; <a href="https://ai.google.dev/gemma/terms" target="_blank" style="color:#e6b257">Gemma Terms of Use</a>). Not affiliated with ICLR/OpenReview.</span>
+<button onclick="localStorage.setItem('atlasNotice','1');this.parentNode.remove()" style="flex:none;border:1px solid #c58d26;background:#c58d26;color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer">Got it</button></div>
+<script>if(!localStorage.getItem('atlasNotice'))document.getElementById('atlas-notice').style.display='flex';</script>
+</body>
+</html>

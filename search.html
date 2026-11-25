@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Semantic Search · ICLR 2027 Atlas</title>
+<link rel="icon" href="assets/img/favicon.svg">
+<link rel="stylesheet" href="assets/css/atlas.css">
+<style>
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); }
+  .top { display: flex; gap: 18px; align-items: center; padding: 10px 24px; border-bottom: 1px solid var(--rule); background: var(--surface); flex-wrap: wrap; }
+  .top a { color: var(--ink-2, #555); text-decoration: none; font-size: 13px; letter-spacing: .04em; }
+  .top a.on, .top a:hover { color: var(--accent); }
+  .brand { font: italic 600 20px var(--font-display); color: var(--ink) !important; margin-right: 8px; }
+  .hero { padding: 26px 24px 14px; max-width: 1180px; margin: 0 auto; }
+  h1 { font: italic 600 30px/1.1 var(--font-display); margin: 0 0 6px; }
+  .sub { color: var(--ink-3, #777); font-size: 13px; }
+  .qrow { display: flex; gap: 10px; margin-top: 16px; }
+  #q { flex: 1; font: 20px var(--font-text); padding: 14px 16px; border: 2px solid var(--rule-2, #ccc); border-radius: 10px; background: var(--surface-hi, #fff); color: var(--ink); }
+  #q:focus { outline: none; border-color: var(--accent); }
+  button, select { font: 14px var(--font-ui); padding: 8px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface-hi, #fff); color: var(--ink); cursor: pointer; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; padding: 0 22px; }
+  .opts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; font-size: 13px; color: var(--ink-3, #777); }
+  .chips-ex { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .chips-ex span { font-size: 12px; padding: 4px 10px; border: 1px dashed var(--rule-2, #bbb); border-radius: 14px; cursor: pointer; color: var(--ink-2, #555); }
+  .chips-ex span:hover { border-color: var(--accent); color: var(--accent); }
+  main { max-width: 1180px; margin: 0 auto; padding: 0 24px 60px; }
+  .meta { font-size: 13px; color: var(--ink-3, #777); margin: 8px 0 12px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+  .row1 { display: flex; gap: 12px; align-items: baseline; }
+  .rank { font: 600 13px var(--font-mono); color: var(--ink-3, #888); min-width: 28px; }
+  .title { font: 600 17px/1.35 var(--font-text); color: var(--ink); text-decoration: none; flex: 1; }
+  .title:hover { color: var(--accent); }
+  .rel { width: 90px; flex: none; }
+  .rel .bar { height: 5px; border-radius: 3px; background: var(--rule); overflow: hidden; }
+  .rel .bar i { display: block; height: 100%; background: var(--accent); }
+  .rel small { font: 11px var(--font-mono); color: var(--ink-3, #888); }
+  .row2 { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 8px 0 0 40px; font-size: 12.5px; }
+  .chip { display: inline-block; min-width: 18px; text-align: center; font: 600 12px var(--font-mono); padding: 1px 4px; border-radius: 3px; color: #fff; margin-right: 2px; }
+  .c1 { background: #b23a2e; } .c2 { background: #cf8a4c; } .c3 { background: #4f86c6; } .c4 { background: #1f5fa8; }
+  .mean { font: 600 13px var(--font-mono); }
+  .tag { color: var(--ink-3, #777); } .maj { font-weight: 600; }
+  .tl { margin: 8px 0 0 40px; font: 14.5px/1.5 var(--font-text); color: var(--ink-2, #444); }
+  .acts { margin: 10px 0 0 40px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .acts button, .acts a { font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--rule); background: transparent; color: var(--ink-2, #555); text-decoration: none; cursor: pointer; }
+  .acts button:hover, .acts a:hover { border-color: var(--accent); color: var(--accent); }
+  .more { margin: 10px 0 0 40px; font: 14px/1.55 var(--font-text); background: var(--surface-2, #f7f4ec); border-radius: 8px; padding: 10px 12px; }
+  .more dt { font: 600 11px var(--font-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3, #888); margin-top: 6px; }
+  .more dd { margin: 2px 0 0; }
+  .warn { padding: 10px 14px; border: 1px solid #e0b25a; background: rgba(224,178,90,.12); border-radius: 8px; font-size: 13px; }
+  .empty { text-align: center; padding: 40px; color: var(--ink-3, #888); }
+  .sum { background: var(--surface); border: 1px solid var(--accent); border-left: 4px solid var(--accent); border-radius: 10px; padding: 14px 18px; margin: 4px 0 14px; font: 15px/1.6 var(--font-text); }
+  .sum h4 { font: 600 12px var(--font-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 12px 0 4px; }
+  .sum ul { margin: 4px 0 4px 18px; padding: 0; } .sum .src { font: 11px var(--font-ui); color: var(--ink-3, #888); margin-top: 8px; }
+  .spin { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--rule); border-top-color: var(--accent); border-radius: 50%; animation: sp 0.8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .engbar { margin-top: 12px; padding: 10px 14px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 13px; }
+  .eng-pill { display: inline-flex; align-items: center; gap: 6px; font: 600 12px var(--font-ui); padding: 3px 10px; border-radius: 14px; background: var(--surface-2, #f5f1e8); border: 1px solid var(--rule); color: var(--ink-2, #444); }
+  .eng-pill.live { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .eng-pill.dot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .accuracy-badge { font-size: 11px; color: var(--accent); border: 1px solid var(--rule-2); border-radius: 14px; padding: 4px 9px; text-decoration: none; max-width: 100%; overflow-wrap: anywhere; }
+  .accuracy-badge:hover { border-color: var(--accent); text-decoration: underline; }
+  .accuracy-badge[hidden] { display: none; }
+  #gemma-btn { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 600; font-size: 13px; padding: 6px 12px; max-width: 100%; white-space: normal; text-align: left; }
+  #gemma-btn:hover { background: var(--accent); color: #fff; }
+  #gemma-btn:disabled { opacity: .6; cursor: wait; }
+  #bmode { max-width: 100%; }
+  .gprog { flex: 1 1 260px; display: none; flex-direction: column; gap: 4px; min-width: 220px; }
+  .gprog.on { display: flex; }
+  .gprog-track { height: 6px; border-radius: 3px; background: var(--rule); overflow: hidden; }
+  .gprog-fill { height: 100%; width: 0%; background: var(--accent); transition: width .18s ease; }
+  .gprog-txt { font: 12px var(--font-mono); color: var(--ink-3, #777); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gemma-attr { margin-left: auto; font-size: 11.5px; color: var(--ink-3, #777); }
+  .gemma-attr a { color: inherit; text-decoration: underline; }
+  .eng-msg { width: 100%; font-size: 12.5px; color: var(--ink-2, #555); }
+  .eng-msg.warn { padding: 7px 10px; margin-top: 2px; }
+  /* never let a long <select> option or chip widen the page */
+  .hero, main { min-width: 0; max-width: 100%; box-sizing: border-box; }
+  .opts label { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; }
+  .opts select { min-width: 0; max-width: 100%; text-overflow: ellipsis; }
+  .chips-ex span { white-space: normal; max-width: 100%; }
+  .card, .title, .tl { overflow-wrap: anywhere; min-width: 0; }
+  .row2 > * { min-width: 0; }
+  .card .tag { display: inline; white-space: normal; overflow-wrap: anywhere; flex: 1 1 auto; }  /* atlas.css .tag is a nowrap pill — undo it here */
+  @media (max-width: 600px) {
+    .opts label { width: 100%; } .opts select { flex: 1; width: 100%; }
+    #engbar { flex-wrap: wrap; max-width: 100%; }
+  }
+  /* phone width (≤ 600 px): no horizontal scroll */
+  #q { min-width: 0; width: 100%; }
+  @media (max-width: 600px) {
+    .top { padding: 8px 12px; gap: 10px; }
+    .hero { padding: 18px 14px 10px; } main { padding: 0 14px 40px; }
+    h1 { font-size: 24px; }
+    .qrow { flex-wrap: wrap; } .qrow button.primary { padding: 10px 18px; }
+    .opts label, .opts select, .opts button { max-width: 100%; }
+    .row1 { flex-wrap: wrap; } .rel { width: 100%; }
+    .row2, .tl, .acts, .more { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<nav class="top">
+  <a class="brand" href="index.html">ICLR 2027 Atlas</a>
+  <a href="index.html">Explorer</a><a class="on" href="search.html">Search</a><a href="categories.html">Categories</a><a href="map.html">Map</a><a href="graph.html">Graph</a><a href="stats.html">Stats</a><a href="agents.html">Agents</a><a href="channel.html">Channel</a><a href="shortlist.html">Lists</a>
+</nav>
+<section class="hero">
+  <h1>Semantic search</h1>
+  <div class="sub">Search 33,627 ICLR 2027 submissions by meaning, not just keywords — GPU embeddings (bge-base), ~15 ms per query. Ratings on a 1–4 scale.</div>
+  <form class="qrow" id="f"><input id="q" placeholder="e.g. KV cache compression for long context" autocomplete="off"><button class="primary" type="submit">Search</button></form>
+  <div class="opts">
+    <label>Results <select id="k"><option>50</option><option selected>100</option><option>200</option><option>500</option></select></label>
+    <label>Sort <select id="sort"><option value="rel">Relevance</option><option value="blend">Relevance × score</option><option value="r">Mean rating</option></select></label>
+    <label>Category <select id="maj"><option value="">All categories</option></select></label>
+    <label>Status <select id="status"><option value="active">Active</option><option value="all">All (incl. withdrawn)</option></select></label>
+    <button type="button" id="exp">Export Markdown</button>
+    <button type="button" id="summ" class="primary" style="padding:8px 14px">✨ Summarize results</button>
+  </div>
+  <div class="chips-ex" id="ex"></div>
+  <div class="engbar" id="engbar">
+    <span class="eng-pill dot" id="eng-pill">Detecting search engine…</span>
+    <a class="accuracy-badge" id="accuracy-badge" href="how.html#quality" hidden></a>
+    <button type="button" id="gemma-btn" style="display:none">🧠 Enable semantic search on this device — EmbeddingGemma (q8), ~331 MB one-time download</button>
+    <select id="bmode" aria-label="In-browser ranking mode" style="display:none;font-size:12px;padding:5px 8px;max-width:100%">
+      <option value="hybrid" selected>Hybrid (Gemma + BM25)</option>
+      <option value="semantic">Semantic only (Gemma)</option>
+      <option value="keyword">Keyword only (BM25)</option>
+    </select>
+    <button type="button" id="gemma-off" style="display:none;font-size:12px;padding:5px 10px">Switch to keyword</button>
+    <div class="gprog" id="gprog" aria-live="polite">
+      <div class="gprog-track"><div class="gprog-fill" id="gprog-fill"></div></div>
+      <div class="gprog-txt" id="gprog-txt">Preparing EmbeddingGemma…</div>
+    </div>
+    <span class="gemma-attr" id="gemma-attr" style="display:none">Built with Gemma · <a href="https://ai.google.dev/gemma/terms" target="_blank" rel="noopener">Gemma Terms of Use</a></span>
+    <div class="eng-msg" id="eng-msg" style="display:none"></div>
+  </div>
+</section>
+<main><div id="sumpanel"></div><div class="meta" id="meta"></div><div id="out"></div></main>
+<script type="module">
+import { gemmaSupported, enableGemma, gemmaSearch, gemmaKeywordSearch, gemmaSimilar, gemmaState, setSharedPapers, getSharedPapers, setSharedTaxonomy } from './assets/js/core/gemma-search.js';
+const $ = s => document.querySelector(s);
+// Optional data and API probes must also work quietly on a static edition.
+async function optionalSearchJSON(path) {
+  return new Promise(resolve => {
+    let worker, timer;
+    const finish = value => { clearTimeout(timer); worker?.terminate(); resolve(value); };
+    try {
+      const source = `onmessage = async ({data: url}) => {
+        try {
+          const r = await fetch(url, {cache: 'no-cache'});
+          // Drain even a missing resource before terminating this worker.
+          const body = await r.text();
+          postMessage(r.ok ? JSON.parse(body) : null);
+        } catch { postMessage(null); }
+      };`;
+      const blob = URL.createObjectURL(new Blob([source], {type: 'text/javascript'}));
+      try { worker = new Worker(blob); } finally { URL.revokeObjectURL(blob); }
+      worker.onmessage = event => finish(event.data);
+      worker.onerror = () => finish(null);
+      timer = setTimeout(() => finish(null), 8000);
+      worker.postMessage(new URL(path, document.baseURI).href);
+    } catch { finish(null); }
+  });
+}
+// Accuracy badge shows the measured held-out nDCG@10 of the engine that is actually active on this page.
+const BENCH = optionalSearchJSON('data/search_eval.json');
+async function updateAccuracyBadge(kind) {
+  const b = await BENCH;
+  const eng = id => b?.engines?.find(e => e.id === id)?.test?.ndcg10;
+  const pick = { server: [b?.headline?.server_ndcg10, 'server idea search'],
+                 browser: [eng('best_browser_fusion'), 'on-device semantic + keyword'],
+                 semantic: [eng('gemma'), 'on-device semantic'],
+                 keyword: [eng('bm25'), 'keyword search'] }[kind];
+  const badge = $('#accuracy-badge');
+  if (!pick || typeof pick[0] !== 'number' || !Number.isFinite(pick[0])) { badge.hidden = true; return; }
+  badge.textContent = `Accuracy nDCG@10 ${pick[0].toFixed(2)} · ${pick[1]} · measured`;
+  badge.title = `Held-out benchmark accuracy of the active engine (${pick[1]}). Read the methodology and all engines.`;
+  badge.setAttribute('aria-label', `${badge.textContent}. View methodology and all engines.`);
+  badge.hidden = false;
+}
+window.__atlasAccuracyBadge = updateAccuracyBadge;
+const GEMMA_PREF_KEY = 'atlas.gemmaSemantic';
+const EX = ['KV cache compression for long context', 'graph neural networks for molecules', 'KV cache compression for long context', 'process reward models for math reasoning', 'vision-language-action robot policy', 'sparse autoencoders for interpretability', 'test-time scaling with verifiers', 'continual learning without forgetting'];
+const tax = await fetch('data/taxonomy.json').then(r => r.json()).catch(() => ({ majors: [] }));
+setSharedTaxonomy(tax);
+const MAJ = Object.fromEntries(tax.majors.map(m => [m.id, m]));
+const FINE = Object.fromEntries(tax.majors.flatMap(m => m.fine.map(f => [f.id, f.name])));
+tax.majors.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(m => $('#maj').insertAdjacentHTML('beforeend', `<option value="${m.id}">${m.name}</option>`));
+$('#ex').innerHTML = EX.map(e => `<span>${e}</span>`).join('');
+const shard = n => String(Math.floor(n / 1000)).padStart(2, '0');
+const cache = {};
+const loadShard = async (kind, n) => { const key = kind + shard(n); if (!(key in cache)) cache[key] = await fetch(`data/${kind}/${shard(n)}.json`).then(r => r.ok ? r.json() : {}).catch(() => ({})); return cache[key]; };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let results = [], label = '';
+let GEMMA_ON = false; // true once EmbeddingGemma is loaded & selected in static mode
+function state() { return { q: $('#q').value.trim(), k: $('#k').value, sort: $('#sort').value, maj: $('#maj').value, status: $('#status').value }; }
+function writeHash() { const s = state(); location.hash = new URLSearchParams(Object.entries(s).filter(([, v]) => v)).toString(); }
+function readHash() { const h = new URLSearchParams(location.hash.slice(1)); for (const k of ['q', 'k', 'sort', 'maj', 'status']) if (h.get(k)) $('#' + k).value = h.get(k); }
+async function run(url, lbl) {
+  label = lbl; $('#out').innerHTML = '<div class="empty">Searching…</div>';
+  try {
+    const r = await fetch(url); const j = await r.json();
+    if (!r.ok) throw new Error(j.error || r.status);
+    results = j.results || []; $('#meta').dataset.took = j.took_ms ?? ''; render();
+  } catch (e) { $('#out').innerHTML = `<div class="warn">Semantic search is unavailable right now (${esc(e.message)}).</div>`; }
+}
+// ---- engine selection: (1) GPU server API → (2) in-browser EmbeddingGemma hybrid → (3) keyword BM25 fallback ----
+const SEMANTIC = await optionalSearchJSON('api/health').then(j => !!(j && j.ready));
+const pillEl = $('#eng-pill'), gemmaBtn = $('#gemma-btn'), bmodeEl = $('#bmode'), gemmaOffBtn = $('#gemma-off'), gprogEl = $('#gprog'), gprogFill = $('#gprog-fill'), gprogTxt = $('#gprog-txt'), gemmaAttr = $('#gemma-attr'), engMsg = $('#eng-msg');
+
+function setEngineMsg(text, isWarn = false) {
+  if (!text) { engMsg.style.display = 'none'; engMsg.textContent = ''; engMsg.className = 'eng-msg'; return; }
+  engMsg.style.display = ''; engMsg.textContent = text; engMsg.className = isWarn ? 'eng-msg warn' : 'eng-msg';
+}
+
+function updateEngineUI() {
+  updateAccuracyBadge(SEMANTIC ? 'server' : !GEMMA_ON || bmodeEl.value === 'keyword' ? 'keyword' : bmodeEl.value === 'semantic' ? 'semantic' : 'browser');
+  if (SEMANTIC) {
+    pillEl.textContent = 'Engine: Server GPU (bge-base)';
+    pillEl.className = 'eng-pill dot live';
+    gemmaBtn.style.display = 'none'; bmodeEl.style.display = 'none'; gemmaOffBtn.style.display = 'none'; gprogEl.classList.remove('on'); gemmaAttr.style.display = 'none';
+    return;
+  }
+  if (GEMMA_ON && gemmaState().ready) {
+    const st = gemmaState();
+    const dev = (st.device || 'wasm').toUpperCase();
+    const bm = bmodeEl.value || 'hybrid';
+    const bmLabel = bm === 'hybrid' ? 'Hybrid' : bm === 'semantic' ? 'Semantic' : 'Keyword';
+    document.querySelector('h1').textContent = 'Semantic search';
+    document.querySelector('.sub').innerHTML = `On-device hybrid semantic + BM25 search over 42,789 ICLR 2027 submissions using Google <b>EmbeddingGemma</b> (${st.dtype || 'q8'} · ${dev}, Web Worker, Matryoshka-256 int8 category shards — runs locally in your browser). Ratings on a 1–4 scale; scores only.`;
+    pillEl.textContent = `Engine: On-device EmbeddingGemma (${bmLabel} · ${dev})`;
+    pillEl.className = 'eng-pill dot live';
+    gemmaBtn.style.display = 'none';
+    bmodeEl.style.display = '';
+    gemmaOffBtn.style.display = '';
+    gprogEl.classList.remove('on');
+    gemmaAttr.style.display = '';
+    return;
+  }
+  document.querySelector('h1').textContent = 'Search';
+  document.querySelector('.sub').innerHTML = 'Instant BM25 keyword search over 42,789 ICLR 2027 submissions, or enable <b>on-device hybrid semantic search</b> with Google EmbeddingGemma right in your browser. Ratings on a 1–4 scale; scores only.';
+  pillEl.textContent = 'Engine: Keyword search (static)';
+  pillEl.className = 'eng-pill dot';
+  bmodeEl.style.display = 'none';
+  gemmaOffBtn.style.display = 'none';
+  gemmaAttr.style.display = gemmaSupported() ? '' : 'none';
+  if (gemmaSupported()) {
+    gemmaBtn.style.display = '';
+    gemmaBtn.disabled = false;
+  } else {
+    gemmaBtn.style.display = 'none';
+    setEngineMsg('In-browser EmbeddingGemma requires WebAssembly typed arrays (unavailable in this browser) — using keyword search.', true);
+  }
+}
+
+if (SEMANTIC) {
+  // Expose server-backed semantic search on window.AtlasSemantic for sibling pages (e.g. ask.html)
+  window.AtlasSemantic = {
+    async search(q, kOrOpts = 20) {
+      const opts = typeof kOrOpts === 'number' ? { k: kOrOpts } : (kOrOpts || {});
+      const r = await fetch(`api/search?${new URLSearchParams({ q: String(q || ''), k: String(opts.k ?? 20), status: opts.status ?? 'active' })}`);
+      if (!r.ok) throw new Error(`api/search ${r.status}`);
+      const j = await r.json();
+      return j.results || [];
+    },
+    supported: () => true,
+    ready: true,
+    mode: 'server-bge',
+  };
+} else {
+  $('#summ').style.display = 'none';
+}
+updateEngineUI();
+
+async function activateGemma({ auto = false } = {}) {
+  if (SEMANTIC) return;
+  if (!gemmaSupported()) {
+    setEngineMsg('On-device semantic search is not supported in this browser — using keyword search.', true);
+    return;
+  }
+  setEngineMsg('');
+  gemmaBtn.disabled = true;
+  gemmaBtn.style.display = 'none';
+  gprogEl.classList.add('on');
+  gprogFill.style.width = '3%';
+  gprogTxt.textContent = 'Starting EmbeddingGemma download…';
+  pillEl.textContent = 'Engine: Loading EmbeddingGemma…';
+  pillEl.className = 'eng-pill dot';
+  try {
+    await enableGemma((ev) => {
+      if (typeof ev.pct === 'number') gprogFill.style.width = `${Math.max(3, Math.min(100, ev.pct))}%`;
+      const shPart = ev.shardsTotal ? `shards ${ev.shardsLoaded}/${ev.shardsTotal}` : '';
+      const dlPart = ev.downloadTotal ? ` · ${(ev.downloadLoaded / 1e6).toFixed(1)}/${(ev.downloadTotal / 1e6).toFixed(1)} MB` : '';
+      gprogTxt.textContent = ev.text || `${shPart}${dlPart}`;
+    }, { priorityMaj: $('#maj').value || '' });
+    GEMMA_ON = true;
+    try { localStorage.setItem(GEMMA_PREF_KEY, '1'); } catch { /* ignore */ }
+    updateEngineUI();
+    if ($('#q').value.trim()) search();
+  } catch (e) {
+    GEMMA_ON = false;
+    gprogEl.classList.remove('on');
+    if (auto) { try { localStorage.removeItem(GEMMA_PREF_KEY); } catch { /* ignore */ } }
+    updateEngineUI();
+    setEngineMsg(`On-device semantic search failed (${e?.message || e}) — using keyword search.`, true);
+    if ($('#q').value.trim()) search();
+  }
+}
+
+gemmaBtn.addEventListener('click', () => activateGemma({ auto: false }));
+bmodeEl.addEventListener('change', () => {
+  updateEngineUI();
+  if ($('#q').value.trim()) search();
+});
+gemmaOffBtn.addEventListener('click', () => {
+  GEMMA_ON = false;
+  try { localStorage.removeItem(GEMMA_PREF_KEY); } catch { /* ignore */ }
+  setEngineMsg('');
+  updateEngineUI();
+  if ($('#q').value.trim()) search();
+});
+
+// Auto-enable on-device semantic search if the user previously opted in (remembered in localStorage)
+if (!SEMANTIC && gemmaSupported()) {
+  let pref = false;
+  try { pref = localStorage.getItem(GEMMA_PREF_KEY) === '1'; } catch { /* ignore */ }
+  if (pref) activateGemma({ auto: true });
+}
+
+let KW_BY_ID = null;
+async function ensurePapersForKeyword() {
+  let P = getSharedPapers();
+  if (!P) {
+    $('#out').innerHTML = '<div class="empty"><span class="spin"></span>Loading the paper index (≈7 MB, once)…</div>';
+    P = (await fetch('data/papers.json').then(r => r.json())).papers;
+    setSharedPapers(P);
+  }
+  if (!KW_BY_ID || KW_BY_ID.size !== P.length) KW_BY_ID = new Map(P.map(p => [p.id, p]));
+  return P;
+}
+const card = (p, s) => ({ id: p.id, s, n: p.n, t: p.t, r: p.r, rs: p.rs || [], sd: p.sd, rk: p.rk, st: p.s, tl: p.tl, pa: p.pa, maj: p.maj, fine: p.fine || [] });
+async function keywordSearch(q, k, status, maj = '') {
+  await ensurePapersForKeyword();
+  return gemmaKeywordSearch(q, { k: +k || 100, status, maj });
+}
+async function keywordSimilar(id, n) {
+  await ensurePapersForKeyword();
+  const sh = String(Math.floor(n / 1000)).padStart(2, '0');
+  const nb = await fetch(`data/neighbors/${sh}.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+  return (nb[id] || []).map(x => KW_BY_ID.get(x)).filter(Boolean).map((p, i) => card(p, +(1 - i * 0.05).toFixed(3)));
+}
+async function runLocal(fn, lbl, fallbackFn = null) {
+  label = lbl; const t0 = performance.now();
+  try { results = await fn(); $('#meta').dataset.took = Math.round(performance.now() - t0); render(); }
+  catch (e) {
+    if (fallbackFn) {
+      setEngineMsg(`On-device semantic search failed (${e?.message || e}) — using keyword search.`, true);
+      GEMMA_ON = false; updateEngineUI();
+      return runLocal(fallbackFn, lbl.replace(/ \(EmbeddingGemma.*\)/, ' (keyword)'));
+    }
+    $('#out').innerHTML = `<div class="warn">Search failed: ${esc(e.message)}</div>`;
+  }
+}
+function search() {
+  const s = state(); if (!s.q) return; writeHash();
+  if (SEMANTIC) {
+    run(`api/search?${new URLSearchParams({ q: s.q, k: s.k, status: s.status })}`, `“${s.q}”`);
+  } else if (GEMMA_ON && gemmaState().ready) {
+    const dev = (gemmaState().device || 'wasm').toUpperCase();
+    const bm = bmodeEl.value || 'hybrid';
+    if (bm === 'keyword') {
+      runLocal(() => keywordSearch(s.q, s.k, s.status, s.maj), `“${s.q}” (keyword)`);
+    } else {
+      const tag = bm === 'hybrid' ? 'hybrid' : 'semantic';
+      runLocal(
+        () => gemmaSearch(s.q, { k: +s.k, status: s.status, maj: s.maj, mode: bm }),
+        `“${s.q}” (EmbeddingGemma ${tag} · ${dev})`,
+        () => keywordSearch(s.q, s.k, s.status, s.maj)
+      );
+    }
+  } else {
+    runLocal(() => keywordSearch(s.q, s.k, s.status, s.maj), `“${s.q}” (keyword)`);
+  }
+}
+function render() {
+  const s = state(); let list = results.filter(p => (!s.maj || p.maj === s.maj));
+  const top = Math.max(...results.map(p => p.s), 1e-6), bot = Math.min(...results.map(p => p.s), 0);
+  const relN = p => (p.s - bot) / (top - bot + 1e-9);
+  if (s.sort === 'r') list.sort((a, b) => (b.r ?? 0) - (a.r ?? 0));
+  if (s.sort === 'blend') list.sort((a, b) => (0.6 * relN(b) + 0.4 * ((b.r ?? 1) - 1) / 3) - (0.6 * relN(a) + 0.4 * ((a.r ?? 1) - 1) / 3));
+  $('#meta').innerHTML = `<span>${list.length} of ${results.length} results for ${esc(label)}${$('#meta').dataset.took ? ` · ${$('#meta').dataset.took} ms` : ''}</span><span>${list.filter(p => (p.r ?? 0) >= 3).length} with mean ≥ 3.0</span>`;
+  $('#out').innerHTML = list.length ? list.map((p, i) => {
+    const m = MAJ[p.maj];
+    return `<article class="card" data-id="${p.id}" data-n="${p.n}">
+      <div class="row1"><span class="rank">${i + 1}</span><a class="title" target="_blank" href="https://openreview.net/forum?id=${p.id}">${esc(p.t)}</a>
+        <div class="rel" title="relevance ${p.s}"><div class="bar"><i style="width:${Math.round(relN(p) * 100)}%"></i></div><small>rel ${p.s.toFixed(3)}</small></div></div>
+      <div class="row2">${p.rs.map(r => `<span class="chip c${Math.round(r)}">${r}</span>`).join('')}<span class="mean">${p.r != null ? p.r.toFixed(2) + ' ± ' + (p.sd ?? 0).toFixed(2) : '–'}</span>
+        ${m ? `<span class="maj" style="color:${m.color}">${esc(m.name)}</span>` : ''}<span class="tag">${(p.fine || []).map(f => esc(FINE[f] || f)).join(' · ')}</span><span class="tag">#${p.n}${p.st !== 'active' ? ' · ' + p.st : ''}</span></div>
+      ${p.tl ? `<div class="tl">${esc(p.tl)}</div>` : ''}
+      <div class="acts"><button data-a="sum">✨ Summarize</button><button data-a="fs">Fact sheet</button><button data-a="abs">Abstract</button><button data-a="sim">More like this</button><a target="_blank" href="https://openreview.net/pdf?id=${p.id}">PDF ↗</a><a target="_blank" href="https://openreview.net/forum?id=${p.id}">OpenReview ↗</a></div>
+      <div class="slot"></div></article>`;
+  }).join('') : '<div class="empty">No results with these filters.</div>';
+}
+$('#out').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]'); if (!b) return;
+  const card = b.closest('.card'), id = card.dataset.id, n = +card.dataset.n, slot = card.querySelector('.slot');
+  if (b.dataset.a === 'sim') {
+    $('#q').value = '';
+    if (SEMANTIC) run(`api/similar?${new URLSearchParams({ id, k: $('#k').value, status: $('#status').value })}`, `papers like #${n}`);
+    else if (GEMMA_ON && gemmaState().ready) runLocal(() => gemmaSimilar(id, { k: +$('#k').value, status: $('#status').value, maj: $('#maj').value }), `papers like #${n} (EmbeddingGemma)`);
+    else runLocal(() => keywordSimilar(id, n), `10 nearest neighbours of #${n}`);
+    window.scrollTo(0, 0); return;
+  }
+  if (b.dataset.a === 'sum' && !SEMANTIC) { slot.innerHTML = `<div class="more">AI summaries need the project GPU server — use the <b>Fact sheet</b> button in this static edition.</div>`; slot.dataset.open = 'sum'; return; }
+  if (slot.dataset.open === b.dataset.a) { slot.innerHTML = ''; slot.dataset.open = ''; return; }
+  slot.dataset.open = b.dataset.a;
+  if (b.dataset.a === 'sum') {
+    slot.innerHTML = `<div class="more"><span class="spin"></span>Summarizing with Gemini Flash… (about 30–60 s)</div>`;
+    const j = await summarize({ ids: id, mode: 'paper' });
+    if (slot.dataset.open === 'sum') slot.innerHTML = j.markdown ? `<div class="sum">${mdRender(j.markdown)}<div class="src">AI summary · ${esc(j.model || '')} · grounded in the abstract and fact sheet${j.cached ? ' · cached' : ''}</div></div>` : `<div class="warn">${esc(j.error || 'Summary failed')}</div>`;
+  }
+  if (b.dataset.a === 'abs') { const a = await loadShard('abstracts', n); slot.innerHTML = `<div class="more">${esc(a[id] || 'Abstract not available.')}</div>`; }
+  if (b.dataset.a === 'fs') {
+    const f = (await loadShard('factsheets', n))[id];
+    slot.innerHTML = f ? `<dl class="more">${[['One-liner', 'one_liner'], ['Problem', 'problem'], ['Method', 'method'], ['Key idea', 'key_idea'], ['Evidence', 'evidence'], ['Claimed gains', 'claimed_gains'], ['Reviewer consensus', 'reviewer_consensus'], ['Main concern', 'main_concern']].map(([l, k]) => f[k] ? `<dt>${l}</dt><dd>${esc(f[k])}</dd>` : '').join('')}</dl>`
+      : `<div class="more">No fact sheet yet — fact sheets cover the top 15,000 papers and are still being written by the agent swarm.</div>`;
+  }
+});
+function mdRender(s) {
+  return esc(s).replace(/^#{2,4} (.*)$/gm, '<h4>$1</h4>').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/^\s*[-*] (.*)$/gm, '<li>$1</li>').replace(/(<li>.*<\/li>\n?)+/g, m => '<ul>' + m + '</ul>')
+    .replace(/#(\d{2,6})/g, (m, n) => { const p = results.find(r => String(r.n) === n); return p ? `<a target="_blank" href="https://openreview.net/forum?id=${p.id}" title="${esc(p.t)}">#${n}</a>` : m; })
+    .replace(/\n{2,}/g, '<br>').replace(/\n/g, ' ');
+}
+async function summarize(params) {
+  try {
+    for (let i = 0; i < 80; i++) {  // async job: poll every 3 s until ready (≤4 min)
+      const r = await fetch(`api/summarize?${new URLSearchParams(params)}`); const j = await r.json();
+      if (!j.pending) return j;
+      await new Promise(res => setTimeout(res, 3000));
+    }
+    return { error: 'Summary is taking too long — try again in a minute.' };
+  }
+  catch (e) { return { error: 'Summaries need the project GPU server (not available on static hosting).' }; }
+}
+$('#summ').addEventListener('click', async () => {
+  const ids = [...document.querySelectorAll('.card')].slice(0, 20).map(c => c.dataset.id);
+  if (!ids.length) { $('#sumpanel').innerHTML = '<div class="warn">Run a search first.</div>'; return; }
+  $('#sumpanel').innerHTML = `<div class="sum"><span class="spin"></span>Summarizing the top ${ids.length} results for ${esc(label)} with Gemini Flash… (about 30–60 s)</div>`;
+  const j = await summarize({ q: $('#q').value.trim() || label, ids: ids.join(','), mode: 'set' });
+  $('#sumpanel').innerHTML = j.markdown ? `<div class="sum">${mdRender(j.markdown)}<div class="src">AI briefing of the top ${j.n} results as currently filtered and sorted · ${esc(j.model || '')} · grounded only in abstracts + fact sheets — verify before citing${j.cached ? ' · cached' : ''}</div></div>` : `<div class="warn">${esc(j.error || 'Summary failed')}</div>`;
+});
+$('#f').addEventListener('submit', e => { e.preventDefault(); $('#sumpanel').innerHTML = ''; search(); });
+$('#ex').addEventListener('click', e => { if (e.target.tagName === 'SPAN') { $('#q').value = e.target.textContent; search(); } });
+['#sort'].forEach(s => $(s).addEventListener('change', () => { writeHash(); render(); }));
+$('#maj').addEventListener('change', () => {
+  if (!SEMANTIC && GEMMA_ON && gemmaState().ready && $('#q').value.trim()) search();
+  else { writeHash(); render(); }
+});
+['#k', '#status'].forEach(s => $(s).addEventListener('change', search));
+$('#exp').addEventListener('click', () => {
+  const rows = [...document.querySelectorAll('.card')].map(c => results.find(p => p.id === c.dataset.id));
+  const md = `# ICLR 2027 Atlas — ${label}\n\n| # | Paper | Mean (ratings) | Category |\n|---|---|---|---|\n` + rows.map((p, i) => `| ${i + 1} | [${p.t.replace(/\|/g, '/')}](https://openreview.net/forum?id=${p.id}) | ${p.r?.toFixed(2)} (${p.rs.join(', ')}) | ${MAJ[p.maj]?.name || ''} |`).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' })); a.download = 'iclr2027_search.md'; a.click();
+});
+readHash(); if ($('#q').value) search(); else $('#q').focus();
+</script>
+<div id="atlas-notice" style="position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;display:none;gap:12px;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:rgba(29,27,23,.92);color:#f3ecdd;font:13px/1.45 Bahnschrift,'Segoe UI',sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.25)">
+<span><b>ICLR 2027 Atlas — static edition.</b> Scores are <i>preliminary</i> reviewer ratings (1–4) from public OpenReview pages. The Atlas shows scores only and makes <b>no</b> prediction of acceptance. Fact sheets &amp; briefs are AI-written (audited) — verify before citing. Search defaults to keyword and offers optional on-device semantic search via EmbeddingGemma (Built with Gemma; <a href="https://ai.google.dev/gemma/terms" target="_blank" style="color:#e6b257">Gemma Terms of Use</a>). Not affiliated with ICLR/OpenReview.</span>
+<button onclick="localStorage.setItem('atlasNotice','1');this.parentNode.remove()" style="flex:none;border:1px solid #c58d26;background:#c58d26;color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer">Got it</button></div>
+<script>if(!localStorage.getItem('atlasNotice'))document.getElementById('atlas-notice').style.display='flex';</script>
+</body>
+</html>

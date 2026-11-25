@@ -1,0 +1,691 @@
+{
+ "generated": "2026-11-25T05:48:22+00:00",
+ "method": {
+  "queries": 80,
+  "types": {
+   "cross-area / hard": 16,
+   "topic": 48,
+   "known-item": 16
+  },
+  "judged_queries": 80,
+  "judged_pairs": 2493,
+  "pool_depth": 10,
+  "grades": "0 off-topic · 1 related · 2 directly about the query (blind to engine)",
+  "split": "tune / test halves (alternating within each query type); weights tuned on tune, all numbers below on test",
+  "metrics": "nDCG@10 (graded), MRR@10 (first grade-2 hit), judged@10 coverage"
+ },
+ "engines": [
+  {
+   "id": "bge",
+   "label": "Dense · bge-base",
+   "where": "server",
+   "config": null,
+   "test": {
+    "ndcg10": 0.741,
+    "mrr10": 0.7071,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "tune": {
+    "ndcg10": 0.7467,
+    "mrr10": 0.6869,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "latency_ms": {
+    "mean": 14.0,
+    "p95": 20.0
+   }
+  },
+  {
+   "id": "gemma",
+   "label": "Dense · EmbeddingGemma",
+   "where": "server + browser",
+   "config": null,
+   "test": {
+    "ndcg10": 0.6831,
+    "mrr10": 0.5927,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "tune": {
+    "ndcg10": 0.7246,
+    "mrr10": 0.7279,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "latency_ms": {
+    "mean": 46.7,
+    "p95": 61.0
+   }
+  },
+  {
+   "id": "bm25",
+   "label": "Keyword · BM25",
+   "where": "server + browser",
+   "config": null,
+   "test": {
+    "ndcg10": 0.6985,
+    "mrr10": 0.7272,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "tune": {
+    "ndcg10": 0.7816,
+    "mrr10": 0.8119,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "latency_ms": {
+    "mean": 1.1,
+    "p95": 2.0
+   }
+  },
+  {
+   "id": "hybrid",
+   "label": "Hybrid RRF (bge + Gemma + BM25)",
+   "where": "server",
+   "config": null,
+   "test": {
+    "ndcg10": 0.7854,
+    "mrr10": 0.7977,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "tune": {
+    "ndcg10": 0.8191,
+    "mrr10": 0.8271,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "latency_ms": {
+    "mean": 52.3,
+    "p95": 72.0
+   }
+  },
+  {
+   "id": "hybrid_rerank",
+   "label": "Hybrid + reranker (bge-reranker-base)",
+   "where": "server",
+   "config": null,
+   "test": {
+    "ndcg10": 0.7448,
+    "mrr10": 0.7559,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "tune": {
+    "ndcg10": 0.8262,
+    "mrr10": 0.8292,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "latency_ms": {
+    "mean": 150.8,
+    "p95": 177.0
+   }
+  },
+  {
+   "id": "hybrid_rerank_m3",
+   "label": "Hybrid + reranker (bge-reranker-v2-m3)",
+   "where": "server",
+   "config": null,
+   "test": {
+    "ndcg10": 0.7856,
+    "mrr10": 0.7731,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "tune": {
+    "ndcg10": 0.8361,
+    "mrr10": 0.8453,
+    "judged10": 1.0,
+    "n": 40
+   },
+   "latency_ms": {
+    "mean": 333.1,
+    "p95": 372.0
+   }
+  },
+  {
+   "id": "best_server_fusion",
+   "label": "Tuned hybrid (server default)",
+   "where": "server",
+   "config": "rrf b=0.25 g=0.5 k=1.0 K=30",
+   "test": {
+    "ndcg10": 0.7557,
+    "mrr10": 0.7702,
+    "judged10": 0.975,
+    "n": 40
+   },
+   "tune": {
+    "ndcg10": 0.848,
+    "mrr10": 0.8894,
+    "judged10": 0.9675,
+    "n": 40
+   },
+   "latency_ms": {
+    "mean": 52.3,
+    "p95": 72.0
+   }
+  },
+  {
+   "id": "best_browser_fusion",
+   "label": "Tuned hybrid (in-browser: Gemma + BM25)",
+   "where": "browser",
+   "config": "rrf b=0.0 g=1.0 k=1.0 K=10",
+   "test": {
+    "ndcg10": 0.7517,
+    "mrr10": 0.7167,
+    "judged10": 0.99,
+    "n": 40
+   },
+   "tune": {
+    "ndcg10": 0.8214,
+    "mrr10": 0.8734,
+    "judged10": 0.985,
+    "n": 40
+   },
+   "latency_ms": {
+    "mean": 52.3,
+    "p95": 72.0
+   }
+  },
+  {
+   "id": "hybrid_idea",
+   "label": "Idea fusion (bge + Gemma + BM25 + Qwen-idea) — DEFAULT",
+   "where": "server",
+   "config": "bge=0.5 gemma=0.5 bm25=1.0 qwen_idea=0.5 K=10",
+   "test": {
+    "ndcg10": 0.7837,
+    "mrr10": 0.7892,
+    "judged10": 0.985,
+    "n": 40
+   },
+   "tune": {
+    "ndcg10": 0.8414,
+    "mrr10": 0.8815,
+    "judged10": 0.965,
+    "n": 40
+   },
+   "latency_ms": {
+    "mean": 92.7,
+    "p95": 110.3
+   }
+  },
+  {
+   "id": "hybrid_idea_m3",
+   "label": "Idea fusion + reranker (bge-reranker-v2-m3, optional)",
+   "where": "server",
+   "config": "idea fusion + m3 top-100",
+   "test": {
+    "ndcg10": 0.6828,
+    "mrr10": 0.765,
+    "judged10": 0.81,
+    "n": 40
+   },
+   "tune": {
+    "ndcg10": 0.7487,
+    "mrr10": 0.8562,
+    "judged10": 0.8225,
+    "n": 40
+   },
+   "latency_ms": {
+    "mean": 653.0,
+    "p95": 696.2
+   }
+  }
+ ],
+ "by_type": {
+  "topic": {
+   "bge": {
+    "ndcg10": 0.7657202110439951,
+    "mrr10": 0.8055555555555555,
+    "judged10": 1.0,
+    "n": 24
+   },
+   "hybrid": {
+    "ndcg10": 0.8004322881531608,
+    "mrr10": 0.8531746031746031,
+    "judged10": 1.0,
+    "n": 24
+   },
+   "best_server_fusion": {
+    "ndcg10": 0.8094377570633896,
+    "mrr10": 0.8740079365079364,
+    "judged10": 0.9708333333333333,
+    "n": 24
+   }
+  },
+  "known-item": {
+   "bge": {
+    "ndcg10": 0.7285354208153176,
+    "mrr10": 0.3854166666666667,
+    "judged10": 1.0,
+    "n": 8
+   },
+   "hybrid": {
+    "ndcg10": 0.8626490679023948,
+    "mrr10": 0.7083333333333334,
+    "judged10": 1.0,
+    "n": 8
+   },
+   "best_server_fusion": {
+    "ndcg10": 0.712662527845128,
+    "mrr10": 0.625,
+    "judged10": 0.9875,
+    "n": 8
+   }
+  },
+  "cross-area / hard": {
+   "bge": {
+    "ndcg10": 0.6792270034875664,
+    "mrr10": 0.7333333333333333,
+    "judged10": 1.0,
+    "n": 8
+   },
+   "hybrid": {
+    "ndcg10": 0.6628886215322839,
+    "mrr10": 0.7208333333333333,
+    "judged10": 1.0,
+    "n": 8
+   },
+   "best_server_fusion": {
+    "ndcg10": 0.6374635790835673,
+    "mrr10": 0.6041666666666666,
+    "judged10": 0.975,
+    "n": 8
+   }
+  }
+ },
+ "headline": {
+  "server_ndcg10": 0.7837,
+  "server_mrr10": 0.7892,
+  "vs_bge_ndcg10": 0.0427,
+  "server_config": "bge=0.5 gemma=0.5 bm25=1.0 qwen_idea=0.5 K=10",
+  "browser_config": "gemma=1.0 bm25=1.0 K=10"
+ },
+ "browser_speed": [
+  {
+   "variant": "WebGPU · q8 (chosen)",
+   "download_mb": 330.9,
+   "embed_ms": 34,
+   "cos_vs_ref": 0.995,
+   "note": "default on desktop GPUs"
+  },
+  {
+   "variant": "WASM · q8 (chosen fallback)",
+   "download_mb": 330.9,
+   "embed_ms": 176,
+   "cos_vs_ref": 0.995,
+   "note": "phones / no GPU"
+  },
+  {
+   "variant": "WebGPU · q4",
+   "download_mb": 218.7,
+   "embed_ms": 18,
+   "cos_vs_ref": 0.972,
+   "note": "rejected: below 0.99 agreement"
+  },
+  {
+   "variant": "WebGPU · fp32",
+   "download_mb": 1256.5,
+   "embed_ms": 18,
+   "cos_vs_ref": 1.0,
+   "note": "rejected: 4× download"
+  },
+  {
+   "variant": "WASM · q4",
+   "download_mb": 218.7,
+   "embed_ms": null,
+   "cos_vs_ref": null,
+   "note": "fails: unsupported operator"
+  }
+ ],
+ "examples": [
+  {
+   "qid": "T11",
+   "query": "KV cache compression for long context inference",
+   "type": "topic",
+   "engines": {
+    "bge": [
+     {
+      "n": 25489,
+      "t": "SIDEKV: SIDE-INFORMATION-AWARE CONTEXT COMPRESSION FOR KV CACHE",
+      "grade": 2
+     },
+     {
+      "n": 42126,
+      "t": "KV-Kaizen: Learning Context-Adaptive Cache Compression Choices",
+      "grade": 2
+     },
+     {
+      "n": 41465,
+      "t": "Distance-KV: Exploiting Relative Distance for Efficient Long-Context Inference",
+      "grade": 2
+     },
+     {
+      "n": 1847,
+      "t": "DASH-KV: Accelerating Long-Context LLM Inference via Asymmetric KV Cache Hashing",
+      "grade": 2
+     },
+     {
+      "n": 33724,
+      "t": "DeltaKV: Beyond Attention Magnitude for KV Cache Compression",
+      "grade": 2
+     }
+    ],
+    "hybrid": [
+     {
+      "n": 25489,
+      "t": "SIDEKV: SIDE-INFORMATION-AWARE CONTEXT COMPRESSION FOR KV CACHE",
+      "grade": 2
+     },
+     {
+      "n": 41465,
+      "t": "Distance-KV: Exploiting Relative Distance for Efficient Long-Context Inference",
+      "grade": 2
+     },
+     {
+      "n": 30336,
+      "t": "Information-Aware KV Cache Compression for Long Reasoning",
+      "grade": 2
+     },
+     {
+      "n": 42126,
+      "t": "KV-Kaizen: Learning Context-Adaptive Cache Compression Choices",
+      "grade": 2
+     },
+     {
+      "n": 42856,
+      "t": "KV Cache Compression as State Substitution: When Does KV Compression Yield a Reliable Replacement for the Full Cache?",
+      "grade": 2
+     }
+    ]
+   }
+  },
+  {
+   "qid": "T17",
+   "query": "sparse autoencoders for finding language model features",
+   "type": "topic",
+   "engines": {
+    "bge": [
+     {
+      "n": 48178,
+      "t": "Guided Sparse Autoencoders for Interpreting Reasoning Features",
+      "grade": 2
+     },
+     {
+      "n": 24907,
+      "t": "Persistent Sparse Autoencoders: Learning Feature-Specific Timescales in Language Model Representations",
+      "grade": 2
+     },
+     {
+      "n": 54541,
+      "t": "Interpreting Brain Responses to Language with Sparse Features from Language Models",
+      "grade": 2
+     },
+     {
+      "n": 53487,
+      "t": "To be or not to be: Mutually Exclusive Features in Language Models",
+      "grade": 2
+     },
+     {
+      "n": 59860,
+      "t": "From Atoms to Trees: Building a Structured Feature Forest with Hierarchical SAEs",
+      "grade": 2
+     }
+    ],
+    "hybrid": [
+     {
+      "n": 24907,
+      "t": "Persistent Sparse Autoencoders: Learning Feature-Specific Timescales in Language Model Representations",
+      "grade": 2
+     },
+     {
+      "n": 59860,
+      "t": "From Atoms to Trees: Building a Structured Feature Forest with Hierarchical SAEs",
+      "grade": 2
+     },
+     {
+      "n": 48178,
+      "t": "Guided Sparse Autoencoders for Interpreting Reasoning Features",
+      "grade": 2
+     },
+     {
+      "n": 39635,
+      "t": "Spike-and-Slab Sparse Autoencoders with Adaptive Sparsity",
+      "grade": 2
+     },
+     {
+      "n": 53487,
+      "t": "To be or not to be: Mutually Exclusive Features in Language Models",
+      "grade": 2
+     }
+    ]
+   }
+  },
+  {
+   "qid": "T29",
+   "query": "forecast multivariate time series when the distribution changes",
+   "type": "topic",
+   "engines": {
+    "bge": [
+     {
+      "n": 19443,
+      "t": "Conformal Prediction for Multivariate Time Series Forecasting Under Heterogeneous Distribution Shifts",
+      "grade": 2
+     },
+     {
+      "n": 33193,
+      "t": "D$^{2}$ARIF: Delay and Density Aware Representation for Irregular Multivariate Time Series Forecasting",
+      "grade": 1
+     },
+     {
+      "n": 46294,
+      "t": "Optimal detection of general moment changes: Simultaneous mean and covariance change detection and beyond",
+      "grade": 1
+     },
+     {
+      "n": 46537,
+      "t": "Model-agnostic predictability quantification of multivariable time series",
+      "grade": 1
+     },
+     {
+      "n": 55910,
+      "t": "When Time Series Foundation Models Fail Under Cross-Channel Dependence",
+      "grade": 1
+     }
+    ],
+    "hybrid": [
+     {
+      "n": 19443,
+      "t": "Conformal Prediction for Multivariate Time Series Forecasting Under Heterogeneous Distribution Shifts",
+      "grade": 2
+     },
+     {
+      "n": 46294,
+      "t": "Optimal detection of general moment changes: Simultaneous mean and covariance change detection and beyond",
+      "grade": 1
+     },
+     {
+      "n": 58482,
+      "t": "Joint Prior-Fitted Prediction for Partially Observed Multivariate Time Series",
+      "grade": 2
+     },
+     {
+      "n": 26183,
+      "t": "TVTS: Learning Time-Varying Dynamics and Directed Cross-Variable Dependencies for Multivariate Time Series Forecasting",
+      "grade": 2
+     },
+     {
+      "n": 58528,
+      "t": "One Model, Three Views: Input-Condition Integration for Probabilistic Time Series Foundation Models",
+      "grade": 1
+     }
+    ]
+   }
+  },
+  {
+   "qid": "T31",
+   "query": "graph neural networks that handle long range interactions",
+   "type": "topic",
+   "engines": {
+    "bge": [
+     {
+      "n": 10176,
+      "t": "Reachability is not enough: Diagnosing long-range behavior in GNNs",
+      "grade": 2
+     },
+     {
+      "n": 26310,
+      "t": "Graph Hierarchical Recurrence for Long-Range Generalization",
+      "grade": 2
+     },
+     {
+      "n": 52502,
+      "t": "Dissecting Long-range Dependency in Graph Implicit Models",
+      "grade": 2
+     },
+     {
+      "n": 18076,
+      "t": "Oscillatory Neural Dynamics over Sheaves",
+      "grade": 2
+     },
+     {
+      "n": 32224,
+      "t": "Geometry-Induced Diffusion on Graphs: Learning Task-Adaptive Propagation for GNNs",
+      "grade": 2
+     }
+    ],
+    "hybrid": [
+     {
+      "n": 10176,
+      "t": "Reachability is not enough: Diagnosing long-range behavior in GNNs",
+      "grade": 2
+     },
+     {
+      "n": 26310,
+      "t": "Graph Hierarchical Recurrence for Long-Range Generalization",
+      "grade": 2
+     },
+     {
+      "n": 18076,
+      "t": "Oscillatory Neural Dynamics over Sheaves",
+      "grade": 2
+     },
+     {
+      "n": 52502,
+      "t": "Dissecting Long-range Dependency in Graph Implicit Models",
+      "grade": 2
+     },
+     {
+      "n": 61571,
+      "t": "Cluster Attention for Graph Deep Learning",
+      "grade": 2
+     }
+    ]
+   }
+  }
+ ],
+ "idea": {
+  "queries": 200,
+  "about": "Each query paraphrases one paper's idea without its title words; success = target paper ranked #1 / in top 10. Caveat: written from fact sheets, so the Qwen-idea index and BM25 get a vocabulary advantage.",
+  "engines": [
+   {
+    "id": "bge",
+    "label": "Dense · bge-base",
+    "success1": 0.27,
+    "success10": 0.555,
+    "mrr10": 0.3569,
+    "n": 200
+   },
+   {
+    "id": "gemma",
+    "label": "Dense · EmbeddingGemma",
+    "success1": 0.28,
+    "success10": 0.535,
+    "mrr10": 0.358,
+    "n": 200
+   },
+   {
+    "id": "bm25",
+    "label": "Keyword · BM25",
+    "success1": 0.755,
+    "success10": 0.895,
+    "mrr10": 0.8016,
+    "n": 200
+   },
+   {
+    "id": "qwen",
+    "label": "qwen",
+    "success1": 0.29,
+    "success10": 0.565,
+    "mrr10": 0.3735,
+    "n": 200
+   },
+   {
+    "id": "qwen_idea",
+    "label": "qwen_idea",
+    "success1": 0.67,
+    "success10": 0.895,
+    "mrr10": 0.7465,
+    "n": 200
+   },
+   {
+    "id": "hybrid",
+    "label": "Hybrid RRF (bge + Gemma + BM25)",
+    "success1": 0.48,
+    "success10": 0.795,
+    "mrr10": 0.5834,
+    "n": 200
+   },
+   {
+    "id": "hybrid_rerank_m3",
+    "label": "Hybrid + reranker (bge-reranker-v2-m3)",
+    "success1": 0.76,
+    "success10": 0.885,
+    "mrr10": 0.7995,
+    "n": 200
+   },
+   {
+    "id": "hybrid_idea",
+    "label": "Idea fusion (bge + Gemma + BM25 + Qwen-idea) — DEFAULT",
+    "success1": 0.735,
+    "success10": 0.94,
+    "mrr10": 0.8115,
+    "n": 200
+   },
+   {
+    "id": "hybrid_idea_m3",
+    "label": "Idea fusion + reranker (bge-reranker-v2-m3, optional)",
+    "success1": 0.795,
+    "success10": 0.955,
+    "mrr10": 0.8493,
+    "n": 200
+   }
+  ],
+  "known_item_handwritten": [
+   {
+    "id": "hybrid_idea",
+    "success1": 0.75,
+    "success10": 1.0,
+    "mrr10": 0.8542,
+    "n": 16
+   },
+   {
+    "id": "hybrid_idea_m3",
+    "success1": 0.75,
+    "success10": 1.0,
+    "mrr10": 0.8104,
+    "n": 16
+   }
+  ]
+ },
+ "default_engine": "hybrid_idea",
+ "browser_fusion": {
+  "semantic_weight": 1.0,
+  "keyword_weight": 1.0,
+  "rrf_k": 10
+ }
+}
