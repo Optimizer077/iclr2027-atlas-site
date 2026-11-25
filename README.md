@@ -80,8 +80,8 @@ Star papers, build named lists with notes, export Markdown / CSV / JSON, or shar
 | <img src="docs/img/map.png" alt="Map"> | <img src="docs/img/graph.png" alt="Graph"> |
 | **Categories** — 24 areas, leaderboards and AI domain briefs | **Explorer** — filter, sort and open any paper |
 | <img src="docs/img/categories.png" alt="Categories"> | <img src="docs/img/explorer.png" alt="Explorer"> |
-| **Ask Gemma** — on-device answers with citations | **Mission control** — the agents that built this |
-| <img src="docs/img/ask.png" alt="Ask Gemma"> | <img src="docs/img/agents.png" alt="Agents"> |
+| **Ask Gemma** — on-device answers with citations | |
+| <img src="docs/img/ask.png" alt="Ask Gemma"> | |
 
 ## 🔢 The numbers
 
@@ -182,7 +182,7 @@ Every fact sheet passed a schema + number-provenance validator; a blind sample w
 
 ```
 ├── index.html, search.html, categories.html, map.html, graph.html,
-│   stats.html, lists.html, ask.html, how.html, agents.html, channel.html
+│   stats.html, lists.html, ask.html, how.html, channel.html
 ├── assets/            css · js (vanilla ES modules, no build step)
 └── data/
     ├── papers.json    all 42,789 records (scores, order by score, categories, map coords)

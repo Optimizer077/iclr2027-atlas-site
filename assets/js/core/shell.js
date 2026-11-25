@@ -14,7 +14,6 @@ export const PAGES = [
   { id: "map", href: "map.html", label: "Map", key: "m" },
   { id: "graph", href: "graph.html", label: "Graph", key: "r" },
   { id: "stats", href: "stats.html", label: "Stats", key: "s" },
-  { id: "agents", href: "agents.html", label: "Agents", key: "a" },
   { id: "channel", href: "channel.html", label: "Channel", key: "h" },
   { id: "lists", href: "lists.html", label: "Lists", key: "l" },
 ];
